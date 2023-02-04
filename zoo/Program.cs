@@ -16,63 +16,59 @@ namespace zoo
 
 class Zoo
 {
-    private Cage _cage1;
-    private Cage _cage2;
-    private Cage _cage3;
-    private Cage _cage4;
+    private List<Cage> _cages = new List<Cage>();
 
     private bool _isWork = true;
+    private int _countCages = 0;
 
     public Zoo()
     {
-        _cage1 = new Cage(1, "Медведь", "Рёв");
-        _cage2 = new Cage(2, "Сова", "У - У");
-        _cage3 = new Cage(3, "Волк", "АУФ");
-        _cage4 = new Cage(4, "Осёл", "И-а");
+        _cages.Add(new Cage("Медведь", "Рёв"));
+        _cages.Add(new Cage("Сова", "У - У"));
+        _cages.Add(new Cage("Волк", "АУФ"));
+        _cages.Add(new Cage("Осёл", "И-а"));
+
+        foreach (var cage in _cages)
+        {
+            _countCages++;
+        }
     }
 
     public void Start()
     {
-        const string NumberCage1 = "1";
-        const string NumberCage2 = "2";
-        const string NumberCage3 = "3";
-        const string NumberCage4 = "4";
-        const string KeyForExit = "5";
-
         while (_isWork)
         {
-            Console.WriteLine($"Нажмите {NumberCage1}, чтобы подойти к клетке №1\n" +
-                $"Нажмите {NumberCage2}, чтобы подойти к клетке №2\n" +
-                $"Нажмите {NumberCage3}, чтобы подойти к клетке №2\n" +
-                $"Нажмите {NumberCage4}, чтобы подойти к клетке №2\n" +
-                $"Нажмите {KeyForExit}, чтобы выйти.");
+            Console.WriteLine($"Перед вами {_countCages} вольеров.\n" +
+                $"Введите номер вольера, чтобы подойти:");
 
-            string userInput = Console.ReadLine();
+            int userInput = UserUtils.GetNumber();
 
-            switch (userInput)
+            GoToCage(userInput);
+
+            Console.WriteLine($"Нажмите '{(char)ConsoleKey.Y}' для выхода или любую другую клавишу для продолжения");
+
+            char userInputChar = (char)Console.ReadKey().Key;
+
+            if (userInputChar == (char)ConsoleKey.Y)
             {
-                case NumberCage1:
-                    _cage1.ShowInfo();
-                    break;
-                case NumberCage2:
-                    _cage2.ShowInfo();
-                    break;
-                case NumberCage3:
-                    _cage3.ShowInfo();
-                    break;
-                case NumberCage4:
-                    _cage4.ShowInfo();
-                    break;
-                case KeyForExit:
-                    _isWork = false;
-                    break;
-                default:
-                    Console.WriteLine("Ошибка!");
-                    break;
+                _isWork = false;
             }
 
-            Console.ReadLine();
             Console.Clear();
+        }
+    }
+
+    private void GoToCage(int numberCage)
+    {
+        int indexCage = numberCage - 1;
+
+        if (numberCage > 0 && numberCage <= _cages.Count)
+        {
+            _cages[indexCage].ShowInfo(numberCage);
+        }
+        else
+        {
+            Console.WriteLine("Вольера с таким номером нет.");
         }
     }
 }
@@ -82,18 +78,16 @@ class Cage
     private static Random _random = new Random();
     private List<Animal> _animals = new List<Animal>();
 
-    private int _number;
     private int _animalsCount;
     private int _maleCount;
     private int _femaleCount;
 
-    public Cage(int numberCage, string species, string biologicalSound)
+    public Cage(string species, string biologicalSound)
     {
         string maleGender = "Самец";
         int minimumAnimals = 1;
         int maximumAnimals = 6;
 
-        _number = numberCage;
         _maleCount = 0;
         _femaleCount = 0;
         _animalsCount = _random.Next(minimumAnimals, maximumAnimals);
@@ -113,14 +107,16 @@ class Cage
         }
     }
 
-    public void ShowInfo()
+    public void ShowInfo(int number)
     {
-        Console.WriteLine($"____________Вольер №{_number}____________:\n" +
+        Console.WriteLine($"________________________{number}________________________:\n" +
             $"Вид животного: {_animals[0].Species}\n" +
             $"Биологический издаваемый звук: {_animals[0].BiologicalSound}\n" +
             $"Количество животных: {_animalsCount}\n" +
             $"Количество самцов: {_maleCount}\n" +
             $"Количество самок: {_femaleCount}");
+
+        Console.WriteLine();
     }
 }
 
@@ -133,7 +129,7 @@ class Animal
         int maximumRandomValue = 2;
         int value = _random.Next(maximumRandomValue);
 
-        if (value == 0)
+        if (value == (int)GenderAnimal.Male)
         {
             Gender = "Самец";
         }
@@ -147,6 +143,40 @@ class Animal
     }
 
     public string Species { get; private set; }
+
     public string Gender { get; private set; }
+
     public string BiologicalSound { get; private set; }
+
+    enum GenderAnimal
+    {
+        Male,
+        Female
+    }
+}
+
+static class UserUtils
+{
+    public static int GetNumber()
+    {
+        bool isNumberWork = true;
+        int userNumber = 0;
+
+        while (isNumberWork)
+        {
+            bool isNumber;
+            string userInput = Console.ReadLine();
+
+            if (isNumber = int.TryParse(userInput, out int number))
+            {
+                userNumber = number;
+                isNumberWork = false;
+            }
+            else
+            {
+                Console.WriteLine($"Не правильный ввод данных!!!  Повторите попытку");
+            }
+        }
+        return userNumber;
+    }
 }
